@@ -95,33 +95,65 @@ class MLP(object):
         
       return error     
       
+   def train(self, inputs, targets, epochs, learning_rate):
+    #inputs (nd array): X
+    #targets (ndarray): Y
+    #epochs (int): number of training iterations
+    #learning_rate (float): 
+      for i in range(epochs):
+        sum_errors = 0
+        for input, target in zip(inputs, targets):
+          output = self.forward_propagate(input)
+          error = target - output
+          self.back_propagate(error) 
+          self.gradient_descent(learning_rate) #this updates the weights
+          sum_errors = sum_errors + self._mse(target, output) #MSE is used later
+          
+        #one Epoch Complete
+        print("Error: {} at epoch {}".format(sum_errors / len(items), i+1))
+    print("Training Complete!")
+    print("======")
+     
       
-      #this is where the gradient descent code should be placed
-      
-      
-      
-      
+   def gradient_descent(self, learningRate = 1):
+    for i in range(len(self.weights)):
+      weights = self.weights[i]
+      derivatives = self.derivatives[i]
+      weights = weights + derivatives * learningRate # could do += ... but keeping this for readability
+   
+   def _mse(self, target, output):
+      #target is the ground truth, ie what we're "training to" (nd array)
+      #output is the predicted values (nd array)
+      return np.average((target - output) **2) # **2 is the "square" of the result 
+           
    def _sigmoid(self, x):
     return 1 / (1+ np.exp(-x))
    
    def _sigmoid_derivative(self, x):
     return x * (1.0 - x)
    
+    
+    
 if __name__ == "__main__":
-  
-  # create an MLP
-  
-  mlp = MLP() #without passing in new parameters ... defaults to as above
-  
-  # create inputs
-  # same as number of inputs in first layer of NN
-  
-  inputs = np.random.rand(mlp.num_inputs)
-  
-  # perform the forward propagation
-  
-  outputs = mlp.forward_propagate(inputs)
-  
-  # print results
-  print("the network inputs are: {}".format(inputs))
-  print("the network outputs are: {}".format(outputs))  
+
+    # create a dataset to train a network for the sum operation
+    items = np.array([[random()/2 for _ in range(2)] for _ in range(1000)])
+    targets = np.array([[i[0] + i[1]] for i in items])
+
+    # create a Multilayer Perceptron with one hidden layer
+    mlp = MLP(2, [5], 1)
+
+    # train network
+    mlp.train(items, targets, 50, 0.1)
+
+    # create dummy data
+    input = np.array([0.3, 0.1])
+    target = np.array([0.4])
+
+    # get a prediction
+    output = mlp.forward_propagate(input)
+
+    print()
+    print("Our network believes that {} + {} is equal to {}".format(input[0], input[1], output[0]))
+
+    
